@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Contains alert_scheduler_client.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+const ALERT_SCHEDULER__SETTINGS_CLIENT = 'alert_scheduler_client.settings';
+
+/**
+ * Implements hook_help().
+ */
+function alert_scheduler_client_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the alert_scheduler_client module.
+    case 'help.page.alert_scheduler_client':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Displays alert messages.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function alert_scheduler_client_preprocess_html(&$variables) {
+  $base_url = \Drupal::config(ALERT_SCHEDULER__SETTINGS_CLIENT)->get('base_url');
+  if (empty($base_url)) {
+    $base_url = '/api/alerts/';
+  }
+  $variables['#attached']['drupalSettings']['alertScheduler']['baseUrl'] = $base_url;
+
+  $refresh_interval = \Drupal::config(ALERT_SCHEDULER__SETTINGS_CLIENT)->get('refresh_interval');
+  if (empty($refresh_interval)) {
+    $refresh_interval = 60000;
+  }
+  $variables['#attached']['drupalSettings']['alertScheduler']['refreshInterval'] = $refresh_interval;
+}

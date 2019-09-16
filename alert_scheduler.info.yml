@@ -1,0 +1,6 @@
+name: 'Alert Scheduler'
+type: module
+description: 'Create alert messages and publish them during a defined time frame.'
+core: 8.x
+hidden: true
+package: 'Alerts'

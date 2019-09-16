@@ -1,0 +1,4 @@
+alert_scheduler.settings.client:
+  route_name: alert_scheduler.settings.client
+  title: 'Settings'
+  base_route: alert_scheduler.settings.client

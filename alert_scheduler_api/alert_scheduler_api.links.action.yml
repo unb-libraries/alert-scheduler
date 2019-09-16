@@ -1,0 +1,5 @@
+entity.scheduled_alert.add_form:
+  route_name: entity.scheduled_alert.add_form
+  title: 'Create Alert'
+  appears_on:
+    - entity.scheduled_alert.collection

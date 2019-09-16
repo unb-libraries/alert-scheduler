@@ -1,0 +1,15 @@
+add scheduled alert entities:
+  title: 'Create Alerts'
+  description: 'Create new alert messages.'
+
+view scheduled alert entities:
+  title: 'View Alerts'
+  description: 'View alert messages.'
+
+edit scheduled alert entities:
+  title: 'Edit Alerts'
+  description: 'Edit alert messages.'
+
+delete scheduled alert entities:
+  title: 'Delete Alerts'
+  description: 'Delete alert messages.'

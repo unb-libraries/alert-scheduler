@@ -1,0 +1,5 @@
+entity.scheduled_alert.collection:
+  title: 'Alerts'
+  route_name: entity.scheduled_alert.collection
+  description: 'Create, edit, and (re-)schedule Alerts.'
+  parent: system.admin_structure

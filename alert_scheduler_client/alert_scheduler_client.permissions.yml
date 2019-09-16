@@ -1,0 +1,3 @@
+administer alert scheduler:
+  title: 'Administer Alert Scheduler'
+  description: 'Allow to change alert scheduler settings.'

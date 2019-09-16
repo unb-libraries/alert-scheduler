@@ -1,0 +1,13 @@
+alerts:
+  version: 1.x
+  js:
+    js/alerts.drupal.behavior.js: {}
+    js/models/AlertModel.js: {}
+    js/collections/AlertCollection.js: {}
+    js/views/AlertView.js: {}
+    js/templates/AlertTemplate.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - core/backbone
+    - core/jquery

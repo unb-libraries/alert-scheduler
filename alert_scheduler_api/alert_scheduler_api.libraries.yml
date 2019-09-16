@@ -1,0 +1,21 @@
+jonthornton-jquery-timepicker:
+  remote: https://github.com/jonthornton/jquery-timepicker
+  version: VERSION
+  license:
+    name: MIT
+    url: https://github.com/jonthornton/jquery-timepicker/blob/master/README.md
+    gpl-compatible: false
+  css:
+    theme:
+      https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css: { type: external, minified: true }
+  js:
+    https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.js: { type: external, minified: true }
+
+timepicker:
+  version: 1.x
+  js:
+    js/timepicker.drupal.behavior.js: {}
+  dependencies:
+    - alert_scheduler_api/jonthornton-jquery-timepicker
+    - core/jquery
+    - core/drupal

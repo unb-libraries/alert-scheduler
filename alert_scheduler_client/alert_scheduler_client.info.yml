@@ -1,0 +1,5 @@
+name: 'Alert Scheduler Client'
+type: module
+description: 'Displays alert messages.'
+core: 8.x
+package: 'Alerts'
