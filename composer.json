@@ -1,5 +1,5 @@
 {
-  "name": "drupal/alert_scheduler",
+  "name": "unb-libraries/alert_scheduler",
   "type": "drupal-module",
   "description": "Drupal 8 Module for managing UNB Libraries Banner Alerts",
   "keywords": ["Drupal"],
