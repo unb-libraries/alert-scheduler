@@ -101,9 +101,6 @@ class Alert extends ContentEntityBase {
       ->setLabel(t('Title'))
       ->setDescription(t('The title of the Alert.'))
       ->setRequired(TRUE)
-      ->setSettings([
-        'max_length' => 50,
-      ])
       ->setDefaultValue('')
       ->setDisplayOptions('form', [
         'weight' => 0,
