@@ -58,6 +58,9 @@ class AlertAPI extends ResourceBase {
     $response = new ResourceResponse($json_alerts);
     $response->addCacheableDependency(CacheableMetadata::createFromRenderArray([
       '#cache' => [
+        'contexts' => [
+          'user',
+        ],
         'tags' => [
           'scheduled_alert_list',
         ]
