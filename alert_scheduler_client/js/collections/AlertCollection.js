@@ -38,7 +38,13 @@
     enableAutoRefresh: function(interval) {
       var collection = this;
       setInterval(function() {
-        collection.fetch();
+          collection.fetch({
+              success: function(collection, response, options) {
+                  $.each(collection.models, function(index, model) {
+                      model.set('isVisible', model.isVisible());
+                  });
+              }
+          });
       }, interval);
     },
 

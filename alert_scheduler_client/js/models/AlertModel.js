@@ -23,6 +23,7 @@
       id: "",
       title: "",
       message: "",
+      isVisible: false,
       interval: {},
     },
 
