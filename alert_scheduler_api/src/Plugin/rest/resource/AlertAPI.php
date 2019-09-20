@@ -56,6 +56,7 @@ class AlertAPI extends ResourceBase {
     }
 
     $response = new ResourceResponse($json_alerts);
+    $response->setMaxAge(60);
     $response->addCacheableDependency(CacheableMetadata::createFromRenderArray([
       '#cache' => [
         'contexts' => [
