@@ -17,7 +17,13 @@
 
     initialize: function(models, options) {
       this.url = options.url;
-      this.fetch();
+      this.fetch({
+          success: function(collection, response, options) {
+              $.each(collection.models, function(index, model) {
+                  model.set('isVisible', model.isVisible());
+              });
+          }
+      });
       if (options.autoRefresh) {
         this.enableAutoRefresh(options.refreshInterval);
       }
