@@ -13,7 +13,7 @@
   AlertCollection = Backbone.Collection.extend({
 
     model: AlertModel,
-    url: drupalSettings.alertScheduler.baseUrl,
+    url: '',
 
     initialize: function(models, options) {
       this.url = options.url;
