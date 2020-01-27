@@ -6,8 +6,12 @@ use Drupal\calendar_hours_server\Entity\HoursCalendar;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 
 class AlertForm extends ContentEntityForm {
+
+  protected const ACTION_CHANGE = 'change';
+  protected const ACTION_CLOSE = 'close';
 
   /**
    * {@inheritDoc}
@@ -21,6 +25,7 @@ class AlertForm extends ContentEntityForm {
     ];
 
     foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
+    /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
       $now = new DrupalDateTime('now', $calendar->getTimezone());
       $today = $now->format('Y-m-d');
       $hours = $calendar->getHours($today, $today);
@@ -30,27 +35,64 @@ class AlertForm extends ContentEntityForm {
         '#title' => $calendar->title,
       ];
 
-      foreach ($hours as $index => $block) {
-        $form['hours'][$calendar_id][$index] = [
-          '#type' => count($hours) > 1 ? 'fieldset' : 'container',
-          '#title' => sprintf('%s - %s',
-            $block->getStart()->format('h:i a'), $block->getEnd()->format('h:i a')),
-          "block_id:{$calendar_id}:{$index}" => [
-            '#type' => 'hidden',
-            '#default_value' => $block->getId(),
-          ],
-          "opens:{$calendar_id}:{$index}" => [
-            '#type' => 'datetime',
-            '#date_date_element' => 'none',
-            '#default_value' => $block->getStart(),
-            '#date_timezone' => $block->getStart()->getTimezone()->getName(),
-          ],
-          "closes:{$calendar_id}:{$index}" => [
-            '#type' => 'datetime',
-            '#date_date_element' => 'none',
-            '#default_value' => $block->getEnd(),
-            '#date_timezone' => $block->getEnd()->getTimezone()->getName(),
-          ],
+      if (!empty($hours)) {
+        foreach ($hours as $index => $block) {
+          $form['hours'][$calendar_id]["{$calendar_id}_action"] = [
+            '#type' => 'select',
+            '#options' => [
+              self::ACTION_CHANGE => $this->t('Change hours'),
+              self::ACTION_CLOSE => $this->t('Close'),
+            ],
+            '#default_value' => self::ACTION_CHANGE,
+          ];
+
+          $form['hours'][$calendar_id][$index] = [
+            '#type' => count($hours) > 1 ? 'fieldset' : 'container',
+            '#title' => sprintf('%s - %s',
+              $block->getStart()->format('h:i a'), $block->getEnd()->format('h:i a')),
+            "block_id:{$calendar_id}:{$index}" => [
+              '#type' => 'hidden',
+              '#default_value' => $block->getId(),
+            ],
+            'time_fields' => [
+              '#type' => 'container',
+              "opens:{$calendar_id}:{$index}" => [
+                '#type' => 'datetime',
+                '#date_date_element' => 'none',
+                '#default_value' => $block->getStart(),
+                '#date_timezone' => $block->getStart()->getTimezone()->getName(),
+              ],
+              "closes:{$calendar_id}:{$index}" => [
+                '#type' => 'datetime',
+                '#date_date_element' => 'none',
+                '#default_value' => $block->getEnd(),
+                '#date_timezone' => $block->getEnd()->getTimezone()->getName(),
+              ],
+              '#states' => [
+                'visible' => [
+                  'select[name="' . $calendar_id . '_action"]' => [
+                    'value' => self::ACTION_CHANGE,
+                  ],
+                ],
+              ],
+            ],
+          ];
+        }
+      }
+      else {
+        $add_hours_url = $calendar
+          ->toUrl('add-hours-form')
+          ->setOption('query', [
+            'date' => $today
+          ]);
+        $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
+        $form['hours'][$calendar_id]['message'] = [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('@calendar is closed on the selected date, but you can @create_link.', [
+            '@calendar' => $calendar->label(),
+            '@create_link' => $add_hours_link->toString(),
+          ]),
         ];
       }
     }
@@ -90,21 +132,27 @@ class AlertForm extends ContentEntityForm {
       $today = $now->format('Y-m-d');
       $hours = $calendar->getHours($today, $today);
 
-      foreach ($hours as $index => $block) {
-        $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
-        $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
-        $from->setDate(
-          intval($now->format('Y')),
-          intval($now->format('m')),
-          intval($now->format('d'))
-        );
-        $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
-        $to->setDate(
-          intval($now->format('Y')),
-          intval($now->format('m')),
-          intval($now->format('d'))
-        );
-        $this->updateHours($calendar, $event_id, $from, $to);
+      $action = $form_state->getValue("{$calendar_id}_action");
+      if ($action === self::ACTION_CHANGE) {
+        foreach ($hours as $index => $block) {
+          $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
+          $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
+          $from->setDate(
+            intval($now->format('Y')),
+            intval($now->format('m')),
+            intval($now->format('d'))
+          );
+          $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
+          $to->setDate(
+            intval($now->format('Y')),
+            intval($now->format('m')),
+            intval($now->format('d'))
+          );
+          $this->updateHours($calendar, $event_id, $from, $to);
+        }
+      }
+      elseif ($action === self::ACTION_CLOSE) {
+        $this->close($calendar, $now);
       }
     }
   }
@@ -131,6 +179,29 @@ class AlertForm extends ContentEntityForm {
     catch (\Exception $e) {
       $this->messenger()->addError($e->getMessage());
       $this->messenger()->addError($this->t('Hours not or only partially updated for @calendar.', [
+        '@calendar' => $calendar->label(),
+      ]));
+    }
+  }
+
+  /**
+   * 'Close' the given calendar.
+   *
+   * @param \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar
+   *   The calendar.
+   * @param \Drupal\Core\Datetime\DrupalDateTime $date
+   *   The date.
+   */
+  protected function close(HoursCalendar $calendar, DrupalDateTime $date) {
+    try {
+      $calendar->close($date);
+      $this->messenger()->addStatus($this->t('@calendar successfully close.', [
+        '@calendar' => $calendar->label(),
+      ]));
+    }
+    catch (\Exception $e) {
+      $this->messenger()->addError($e->getMessage());
+      $this->messenger()->addError($this->t('@calendar could not be closed.', [
         '@calendar' => $calendar->label(),
       ]));
     }
