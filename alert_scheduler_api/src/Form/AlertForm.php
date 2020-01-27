@@ -22,6 +22,7 @@ class AlertForm extends ContentEntityForm {
     $form['hours_override'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Change hours'),
+      '#weight' => 10,
     ];
 
     $form['hours'] = [
@@ -34,6 +35,7 @@ class AlertForm extends ContentEntityForm {
           ],
         ],
       ],
+      '#weight' => 15,
     ];
 
     foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {

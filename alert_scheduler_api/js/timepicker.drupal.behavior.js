@@ -30,9 +30,10 @@
           }
         } else {
           var datePartner = $('input[type="date"]', context).get(index);
-          console.log($(datePartner));
-          var time = that.formatTime(new Date($(datePartner).val() + ' ' + timeInput.val()));
-          timeInput.val(time);
+          if (datePartner !== undefined) {
+            var time = that.formatTime(new Date($(datePartner).val() + ' ' + timeInput.val()));
+            timeInput.val(time);
+          }
         }
 
         timeInput.timepicker(widgetSettings);
