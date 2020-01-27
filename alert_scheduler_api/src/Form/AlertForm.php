@@ -19,9 +19,21 @@ class AlertForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
+    $form['hours_override'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Change hours'),
+    ];
+
     $form['hours'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Hours'),
+      '#states' => [
+        'visible' => [
+          'input[name="hours_override"]' => [
+            'checked' => TRUE,
+          ],
+        ],
+      ],
     ];
 
     foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
@@ -127,32 +139,34 @@ class AlertForm extends ContentEntityForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
-      $now = new DrupalDateTime('now', $calendar->getTimezone());
-      $today = $now->format('Y-m-d');
-      $hours = $calendar->getHours($today, $today);
+    if ($form_state->getValue('hours_override')) {
+      foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
+        $now = new DrupalDateTime('now', $calendar->getTimezone());
+        $today = $now->format('Y-m-d');
+        $hours = $calendar->getHours($today, $today);
 
-      $action = $form_state->getValue("{$calendar_id}_action");
-      if ($action === self::ACTION_CHANGE) {
-        foreach ($hours as $index => $block) {
-          $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
-          $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
-          $from->setDate(
-            intval($now->format('Y')),
-            intval($now->format('m')),
-            intval($now->format('d'))
-          );
-          $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
-          $to->setDate(
-            intval($now->format('Y')),
-            intval($now->format('m')),
-            intval($now->format('d'))
-          );
-          $this->updateHours($calendar, $event_id, $from, $to);
+        $action = $form_state->getValue("{$calendar_id}_action");
+        if ($action === self::ACTION_CHANGE) {
+          foreach ($hours as $index => $block) {
+            $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
+            $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
+            $from->setDate(
+              intval($now->format('Y')),
+              intval($now->format('m')),
+              intval($now->format('d'))
+            );
+            $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
+            $to->setDate(
+              intval($now->format('Y')),
+              intval($now->format('m')),
+              intval($now->format('d'))
+            );
+            $this->updateHours($calendar, $event_id, $from, $to);
+          }
         }
-      }
-      elseif ($action === self::ACTION_CLOSE) {
-        $this->close($calendar, $now);
+        elseif ($action === self::ACTION_CLOSE) {
+          $this->close($calendar, $now);
+        }
       }
     }
   }
