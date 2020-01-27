@@ -47,6 +47,12 @@ class AlertForm extends ContentEntityForm {
       $form['hours'][$calendar->id()] = [
         '#type' => 'fieldset',
         '#title' => $calendar->title,
+        '#attributes' => [
+          'class' => [
+            'form-row',
+            'pl-0',
+          ],
+        ],
       ];
 
       if (!empty($hours)) {
@@ -72,12 +78,14 @@ class AlertForm extends ContentEntityForm {
               '#type' => 'container',
               "opens:{$calendar_id}:{$index}" => [
                 '#type' => 'datetime',
+                '#title' => $this->t('Opens'),
                 '#date_date_element' => 'none',
                 '#default_value' => $block->getStart(),
                 '#date_timezone' => $block->getStart()->getTimezone()->getName(),
               ],
               "closes:{$calendar_id}:{$index}" => [
                 '#type' => 'datetime',
+                '#title' => $this->t('Closes'),
                 '#date_date_element' => 'none',
                 '#default_value' => $block->getEnd(),
                 '#date_timezone' => $block->getEnd()->getTimezone()->getName(),
@@ -87,6 +95,12 @@ class AlertForm extends ContentEntityForm {
                   'select[name="' . $calendar_id . '_action"]' => [
                     'value' => self::ACTION_CHANGE,
                   ],
+                ],
+              ],
+              '#attributes' => [
+                'class' => [
+                  'form-row',
+                  'pl-0',
                 ],
               ],
             ],
@@ -113,6 +127,19 @@ class AlertForm extends ContentEntityForm {
 
     $form['#attached']['library'][] = 'alert_scheduler_api/timepicker';
     return $form;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $actions['#attributes'] = [
+      'class' => [
+        'mt-3',
+      ],
+    ];
+    return $actions;
   }
 
   /**
