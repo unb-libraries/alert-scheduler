@@ -10,118 +10,131 @@ use Drupal\Core\Link;
 
 class AlertForm extends ContentEntityForm {
 
+  protected const SETTINGS_AMENDABLE_CALENDARS = 'calendar_overrides';
+
   protected const ACTION_CHANGE = 'change';
   protected const ACTION_CLOSE = 'close';
 
+  /**
+   * Retrieve app settings.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   *   An immutable config object.
+   */
+  protected function getAppConfig() {
+    return $this->config('alert_scheduler.settings');
+  }
   /**
    * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    $form['hours_override'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Change hours'),
-      '#weight' => 10,
-    ];
-
-    $form['hours'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Hours'),
-      '#states' => [
-        'visible' => [
-          'input[name="hours_override"]' => [
-            'checked' => TRUE,
-          ],
-        ],
-      ],
-      '#weight' => 15,
-    ];
-
-    foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
-    /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
-      $now = new DrupalDateTime('now', $calendar->getTimezone());
-      $today = $now->format('Y-m-d');
-      $hours = $calendar->getHours($today, $today);
-
-      $form['hours'][$calendar->id()] = [
-        '#type' => 'fieldset',
-        '#title' => $calendar->title,
-        '#attributes' => [
-          'class' => [
-            'form-row',
-            'pl-0',
-          ],
-        ],
+    if ($calendars = $this->loadCalendars()) {
+      $form['hours_override'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Change hours'),
+        '#weight' => 10,
       ];
 
-      if (!empty($hours)) {
-        foreach ($hours as $index => $block) {
-          $form['hours'][$calendar_id]["{$calendar_id}_action"] = [
-            '#type' => 'select',
-            '#options' => [
-              self::ACTION_CHANGE => $this->t('Change hours'),
-              self::ACTION_CLOSE => $this->t('Close'),
+      $form['hours'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Hours'),
+        '#states' => [
+          'visible' => [
+            'input[name="hours_override"]' => [
+              'checked' => TRUE,
             ],
-            '#default_value' => self::ACTION_CHANGE,
-          ];
+          ],
+        ],
+        '#weight' => 15,
+      ];
 
-          $form['hours'][$calendar_id][$index] = [
-            '#type' => count($hours) > 1 ? 'fieldset' : 'container',
-            '#title' => sprintf('%s - %s',
-              $block->getStart()->format('h:i a'), $block->getEnd()->format('h:i a')),
-            "block_id:{$calendar_id}:{$index}" => [
-              '#type' => 'hidden',
-              '#default_value' => $block->getId(),
+      foreach ($calendars as $calendar_id => $calendar) {
+        /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
+        $now = new DrupalDateTime('now', $calendar->getTimezone());
+        $today = $now->format('Y-m-d');
+        $hours = $calendar->getHours($today, $today);
+
+        $form['hours'][$calendar->id()] = [
+          '#type' => 'fieldset',
+          '#title' => $calendar->title,
+          '#attributes' => [
+            'class' => [
+              'form-row',
+              'pl-0',
             ],
-            'time_fields' => [
-              '#type' => 'container',
-              "opens:{$calendar_id}:{$index}" => [
-                '#type' => 'datetime',
-                '#title' => $this->t('Opens'),
-                '#date_date_element' => 'none',
-                '#default_value' => $block->getStart(),
-                '#date_timezone' => $block->getStart()->getTimezone()->getName(),
+          ],
+        ];
+
+        if (!empty($hours)) {
+          foreach ($hours as $index => $block) {
+            $form['hours'][$calendar_id]["{$calendar_id}_action"] = [
+              '#type' => 'select',
+              '#options' => [
+                self::ACTION_CHANGE => $this->t('Change hours'),
+                self::ACTION_CLOSE => $this->t('Close'),
               ],
-              "closes:{$calendar_id}:{$index}" => [
-                '#type' => 'datetime',
-                '#title' => $this->t('Closes'),
-                '#date_date_element' => 'none',
-                '#default_value' => $block->getEnd(),
-                '#date_timezone' => $block->getEnd()->getTimezone()->getName(),
+              '#default_value' => self::ACTION_CHANGE,
+            ];
+
+            $form['hours'][$calendar_id][$index] = [
+              '#type' => count($hours) > 1 ? 'fieldset' : 'container',
+              '#title' => sprintf('%s - %s',
+                $block->getStart()->format('h:i a'), $block->getEnd()->format('h:i a')),
+              "block_id:{$calendar_id}:{$index}" => [
+                '#type' => 'hidden',
+                '#default_value' => $block->getId(),
               ],
-              '#states' => [
-                'visible' => [
-                  'select[name="' . $calendar_id . '_action"]' => [
-                    'value' => self::ACTION_CHANGE,
+              'time_fields' => [
+                '#type' => 'container',
+                "opens:{$calendar_id}:{$index}" => [
+                  '#type' => 'datetime',
+                  '#title' => $this->t('Opens'),
+                  '#date_date_element' => 'none',
+                  '#default_value' => $block->getStart(),
+                  '#date_timezone' => $block->getStart()->getTimezone()->getName(),
+                ],
+                "closes:{$calendar_id}:{$index}" => [
+                  '#type' => 'datetime',
+                  '#title' => $this->t('Closes'),
+                  '#date_date_element' => 'none',
+                  '#default_value' => $block->getEnd(),
+                  '#date_timezone' => $block->getEnd()->getTimezone()->getName(),
+                ],
+                '#states' => [
+                  'visible' => [
+                    'select[name="' . $calendar_id . '_action"]' => [
+                      'value' => self::ACTION_CHANGE,
+                    ],
+                  ],
+                ],
+                '#attributes' => [
+                  'class' => [
+                    'form-row',
+                    'pl-0',
                   ],
                 ],
               ],
-              '#attributes' => [
-                'class' => [
-                  'form-row',
-                  'pl-0',
-                ],
-              ],
-            ],
+            ];
+          }
+        }
+        else {
+          $add_hours_url = $calendar
+            ->toUrl('add-hours-form')
+            ->setOption('query', [
+              'date' => $today
+            ]);
+          $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
+          $form['hours'][$calendar_id]['message'] = [
+            '#type' => 'html_tag',
+            '#tag' => 'p',
+            '#value' => $this->t('@calendar is closed on the selected date, but you can @create_link.', [
+              '@calendar' => $calendar->label(),
+              '@create_link' => $add_hours_link->toString(),
+            ]),
           ];
         }
-      }
-      else {
-        $add_hours_url = $calendar
-          ->toUrl('add-hours-form')
-          ->setOption('query', [
-            'date' => $today
-          ]);
-        $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
-        $form['hours'][$calendar_id]['message'] = [
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('@calendar is closed on the selected date, but you can @create_link.', [
-            '@calendar' => $calendar->label(),
-            '@create_link' => $add_hours_link->toString(),
-          ]),
-        ];
       }
     }
 
@@ -145,21 +158,35 @@ class AlertForm extends ContentEntityForm {
   /**
    * Load calendars.
    *
-   * @param array $ids
-   *   IDs of the calendars to load.
-   *
    * @return \Drupal\calendar_hours_server\Entity\HoursCalendar[]
    *   Array of calendar entities.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function loadCalendars($ids = []) {
+  protected function loadCalendars() {
     /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar[] $calendars */
     $calendars = $this->entityTypeManager
       ->getStorage('hours_calendar')
-      ->loadMultiple($ids);
+      ->loadMultiple($this->getWritableCalendarIds());
     return $calendars;
+  }
+
+  /**
+   * Retrieve the IDs of all calendars that can be amended.
+   *
+   * @return array
+   *   Array of HoursCalendar IDs.
+   */
+  protected function getWritableCalendarIds() {
+    $calendar_ids = $this->getAppConfig()
+      ->get(self::SETTINGS_AMENDABLE_CALENDARS);
+    if (isset($calendar_ids)) {
+      return $calendar_ids;
+    }
+    else {
+      return [];
+    }
   }
 
   /**
