@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 class AlertForm extends ContentEntityForm {
 
@@ -162,19 +163,27 @@ class AlertForm extends ContentEntityForm {
             $other_day_label = 'tomorrow';
             $tomorrow = $now->add(\DateInterval::createFromDateString('1 day'))
               ->format('Y-m-d');
-            $other_day_url = $this->getEntity()
-              ->toUrl('edit-form')
-              ->setOption('query', [
-                  'date' => $tomorrow,
-                ] + $this->getRedirectDestination()->getAsArray());
+            if ($this->getEntity()->isNew()) {
+              $other_day_url = Url::fromRoute('entity.scheduled_alert.add_form');
+            }
+            else{
+              $other_day_url = $this->getEntity()->toUrl('edit-form');
+            }
+            $other_day_url->setOption('query', [
+              'date' => $tomorrow,
+            ] + $this->getRedirectDestination()->getAsArray());
           }
           else {
             $other_day_label = 'today';
-            $other_day_url = $this->getEntity()
-              ->toUrl('edit-form')
-              ->mergeOptions([
-                'query' => $this->getRedirectDestination()->getAsArray(),
-              ]);
+            if ($this->getEntity()->isNew()) {
+              $other_day_url = Url::fromRoute('entity.scheduled_alert.add_form');
+            }
+            else{
+              $other_day_url = $this->getEntity()->toUrl('edit-form');
+            }
+            $other_day_url->mergeOptions([
+              'query' => $this->getRedirectDestination()->getAsArray(),
+            ]);
           }
 
           $form['hours']['edit-other-day'] = [
