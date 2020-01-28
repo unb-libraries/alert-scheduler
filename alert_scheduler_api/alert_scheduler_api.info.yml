@@ -5,3 +5,4 @@ core: 8.x
 package: 'Alerts'
 dependencies:
   - datetime_range
+  - calendar_hours_server
