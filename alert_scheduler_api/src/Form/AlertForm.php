@@ -24,6 +24,19 @@ class AlertForm extends ContentEntityForm {
   protected function getAppConfig() {
     return $this->config('alert_scheduler.settings');
   }
+
+  /**
+   * Retrieve a datetime generator instance for this module.
+   *
+   * @return \Drupal\alert_scheduler_api\AlertDateTimeGenerator
+   *   A datetime generator instance.
+   */
+  protected function getDateTimeGenerator() {
+    /** @var \Drupal\alert_scheduler_api\AlertDateTimeGenerator $generator */
+    $generator = \Drupal::service('datetime_generator.alert_scheduler');
+    return $generator;
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -123,13 +136,13 @@ class AlertForm extends ContentEntityForm {
           $add_hours_url = $calendar
             ->toUrl('add-hours-form')
             ->setOption('query', [
-              'date' => $today
+              'date' => $today,
             ]);
           $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
           $form['hours'][$calendar_id]['message'] = [
             '#type' => 'html_tag',
             '#tag' => 'p',
-            '#value' => $this->t('@calendar is closed on the selected date, but you can @create_link.', [
+            '#value' => $this->t('@calendar is currently closed, but you can @create_link.', [
               '@calendar' => $calendar->label(),
               '@create_link' => $add_hours_link->toString(),
             ]),
@@ -242,8 +255,11 @@ class AlertForm extends ContentEntityForm {
   protected function updateHours(HoursCalendar $calendar, $event_id, DrupalDateTime $from, DrupalDateTime $to) {
     try {
       $calendar->setHours($event_id, $from, $to);
-      $this->messenger()->addStatus($this->t('Hours update for @calendar', [
+      $this->messenger()->addStatus($this->t('@calendar is now open from @hours_start - @hours_end on @date.', [
         '@calendar' => $calendar->label(),
+        '@hours_start' => $from->format('h:i a'),
+        '@hours_end' => $to->format('h:i a'),
+        '@date' => $from->format('M jS, Y'),
       ]));
     }
     catch (\Exception $e) {
@@ -265,7 +281,7 @@ class AlertForm extends ContentEntityForm {
   protected function close(HoursCalendar $calendar, DrupalDateTime $date) {
     try {
       $calendar->close($date);
-      $this->messenger()->addStatus($this->t('@calendar successfully close.', [
+      $this->messenger()->addStatus($this->t('@calendar is now closed.', [
         '@calendar' => $calendar->label(),
       ]));
     }
