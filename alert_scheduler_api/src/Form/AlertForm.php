@@ -289,7 +289,30 @@ class AlertForm extends ContentEntityForm {
           $this->close($calendar, $date);
         }
       }
+
+      $this->messenger()->addWarning($this->t('Hours will not update on the website until @release_time.', [
+        '@release_time' => $this->nextQuarterHour()->format('h:i a'),
+      ]));
     }
+  }
+
+  /**
+   * Retrieve a date time object which represents the next quarter of the hour.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime
+   *   A datetime object.
+   */
+  protected function nextQuarterHour() {
+    $release_time = new DrupalDateTime('now');
+    $hour = intval($release_time->format('H'));
+    $minute = intval($release_time->format('i'));
+    $past_quarter_hour = floor($minute / 15) * 15;
+    $next_quarter_hour = $past_quarter_hour + 15;
+
+    $release_time->setTime($hour, 0, 0)
+      ->add(\DateInterval::createFromDateString("{$next_quarter_hour} minutes"));
+
+    return $release_time;
   }
 
   /**
@@ -333,8 +356,9 @@ class AlertForm extends ContentEntityForm {
   protected function close(HoursCalendar $calendar, DrupalDateTime $date) {
     try {
       $calendar->close($date);
-      $this->messenger()->addStatus($this->t('@calendar is now closed.', [
+      $this->messenger()->addStatus($this->t('@calendar is now closed on @date.', [
         '@calendar' => $calendar->label(),
+        '@date' => $date->format('D jS, Y'),
       ]));
     }
     catch (\Exception $e) {
