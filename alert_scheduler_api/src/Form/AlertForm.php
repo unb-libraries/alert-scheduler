@@ -80,8 +80,9 @@ class AlertForm extends ContentEntityForm {
           ]),
           '#attributes' => [
             'class' => [
-              'form-row',
-              'pl-0',
+              'd-flex',
+              'flex-column',
+              'flex-sm-row',
             ],
           ],
         ];
@@ -131,7 +132,6 @@ class AlertForm extends ContentEntityForm {
                 '#attributes' => [
                   'class' => [
                     'form-row',
-                    'pl-0',
                   ],
                 ],
               ],
