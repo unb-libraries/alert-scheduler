@@ -67,11 +67,16 @@ class AlertForm extends ContentEntityForm {
         /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
         $now = new DrupalDateTime('now', $calendar->getTimezone());
         $today = $now->format('Y-m-d');
-        $hours = $calendar->getHours($today, $today);
+        if (!$date = $this->getRequest()->query->get('date')) {
+          $date = $today;
+        }
+        $hours = $calendar->getHours($date, $date);
 
         $form['hours'][$calendar->id()] = [
           '#type' => 'fieldset',
-          '#title' => $calendar->title,
+          '#title' => $this->t($calendar->title . ' (@day)', [
+            '@day' => $date === $today ? 'today' : 'tomorrow',
+          ]),
           '#attributes' => [
             'class' => [
               'form-row',
@@ -136,7 +141,7 @@ class AlertForm extends ContentEntityForm {
           $add_hours_url = $calendar
             ->toUrl('add-hours-form')
             ->setOption('query', [
-              'date' => $today,
+              'date' => $date,
             ]);
           $add_hours_url->mergeOptions([
             'query' => $this->getRedirectDestination()->getAsArray(),
@@ -149,6 +154,37 @@ class AlertForm extends ContentEntityForm {
               '@calendar' => $calendar->label(),
               '@create_link' => $add_hours_link->toString(),
             ]),
+          ];
+        }
+
+        if (!array_key_exists('edit-other-day', $form['hours'])) {
+          if ($date === $today) {
+            $other_day_label = 'tomorrow';
+            $tomorrow = $now->add(\DateInterval::createFromDateString('1 day'))
+              ->format('Y-m-d');
+            $other_day_url = $this->getEntity()
+              ->toUrl('edit-form')
+              ->setOption('query', [
+                  'date' => $tomorrow,
+                ] + $this->getRedirectDestination()->getAsArray());
+          }
+          else {
+            $other_day_label = 'today';
+            $other_day_url = $this->getEntity()
+              ->toUrl('edit-form')
+              ->mergeOptions([
+                'query' => $this->getRedirectDestination()->getAsArray(),
+              ]);
+          }
+
+          $form['hours']['edit-other-day'] = [
+            '#type' => 'html_tag',
+            '#tag' => 'p',
+            '#value' => $this->t("If you need to change @other_day's hours instead, click @link", [
+              '@other_day' => $other_day_label,
+              '@link' => Link::fromTextAndUrl('here', $other_day_url)->toString(),
+            ]),
+            '#weight' => 100,
           ];
         }
       }
@@ -213,9 +249,13 @@ class AlertForm extends ContentEntityForm {
 
     if ($form_state->getValue('hours_override')) {
       foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
-        $now = new DrupalDateTime('now', $calendar->getTimezone());
-        $today = $now->format('Y-m-d');
-        $hours = $calendar->getHours($today, $today);
+        if ($date = $this->getRequest()->query->get('date')) {
+          $date = DrupalDateTime::createFromFormat('Y-m-d', $date);
+        }
+        else {
+          $date = new DrupalDateTime('now', $calendar->getTimezone());
+        }
+        $hours = $calendar->getHours($date->format('Y-m-d'), $date->format('Y-m-d'));
 
         $action = $form_state->getValue("{$calendar_id}_action");
         if ($action === self::ACTION_CHANGE) {
@@ -223,21 +263,21 @@ class AlertForm extends ContentEntityForm {
             $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
             $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
             $from->setDate(
-              intval($now->format('Y')),
-              intval($now->format('m')),
-              intval($now->format('d'))
+              intval($date->format('Y')),
+              intval($date->format('m')),
+              intval($date->format('d'))
             );
             $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
             $to->setDate(
-              intval($now->format('Y')),
-              intval($now->format('m')),
-              intval($now->format('d'))
+              intval($date->format('Y')),
+              intval($date->format('m')),
+              intval($date->format('d'))
             );
             $this->updateHours($calendar, $event_id, $from, $to);
           }
         }
         elseif ($action === self::ACTION_CLOSE) {
-          $this->close($calendar, $now);
+          $this->close($calendar, $date);
         }
       }
     }
