@@ -138,6 +138,9 @@ class AlertForm extends ContentEntityForm {
             ->setOption('query', [
               'date' => $today,
             ]);
+          $add_hours_url->mergeOptions([
+            'query' => $this->getRedirectDestination()->getAsArray(),
+          ]);
           $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
           $form['hours'][$calendar_id]['message'] = [
             '#type' => 'html_tag',
