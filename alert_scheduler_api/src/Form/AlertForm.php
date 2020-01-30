@@ -87,8 +87,10 @@ class AlertForm extends ContentEntityForm {
 
         $form['hours_container']['hours'][$calendar->id()] = [
           '#type' => 'fieldset',
-          '#title' => $this->t($calendar->title . ' (@day)', [
+          '#title' => $this->t($calendar->title . ' (@day@sep@date)', [
             '@day' => $date === $today ? 'today' : 'tomorrow',
+            '@sep' => $date !== $today ? ', ' : '',
+            '@date'=> $date !== $today ? DrupalDateTime::createFromFormat('Y-m-d', $date)->format('M jS, Y') : '',
           ]),
           '#attributes' => [
             'class' => [
