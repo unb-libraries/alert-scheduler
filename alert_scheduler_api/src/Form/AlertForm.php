@@ -257,6 +257,7 @@ class AlertForm extends ContentEntityForm {
     parent::submitForm($form, $form_state);
 
     if ($form_state->getValue('hours_override')) {
+      $any_update = FALSE;
       foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
         /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
         if ($date = $this->getRequest()->query->get('date')) {
@@ -286,25 +287,37 @@ class AlertForm extends ContentEntityForm {
               intval($date->format('d'))
             );
 
+            $do_update = TRUE;
             if (($diff = $to->getTimestamp() - $from->getTimestamp()) < 0) {
               $to->add(\DateInterval::createFromDateString('1 day'));
             }
             elseif ($diff === 0) {
-              $this->messenger()->addWarning($this->t('@calendar is set to close at the same time as it opens.', [
+              $do_update = FALSE;
+              $this->messenger()->addError($this->t('Opening and closing time must not be the same, @calendar was not updated.', [
                 '@calendar' => $calendar->label(),
               ]));
+            } elseif ($from->getTimestamp() === $block->getStart()->getTimestamp()
+              && $to->getTimestamp() === $block->getEnd()->getTimestamp()) {
+              $do_update = FALSE;
             }
-            $this->updateHours($calendar, $event_id, $from, $to);
+
+            if ($do_update) {
+              $this->updateHours($calendar, $event_id, $from, $to);
+              $any_update = TRUE;
+            }
           }
         }
         elseif ($action === self::ACTION_CLOSE) {
           $this->close($calendar, $date);
+          $any_update = TRUE;
         }
       }
 
-      $this->messenger()->addWarning($this->t('Hours will not update on the website until @release_time.', [
-        '@release_time' => $this->nextQuarterHour()->format('h:i a'),
-      ]));
+      if ($any_update) {
+        $this->messenger()->addWarning($this->t('Hours will not update on the website until @release_time.', [
+          '@release_time' => $this->nextQuarterHour()->format('h:i a'),
+        ]));
+      }
     }
   }
 
