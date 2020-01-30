@@ -258,6 +258,7 @@ class AlertForm extends ContentEntityForm {
 
     if ($form_state->getValue('hours_override')) {
       foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
+        /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
         if ($date = $this->getRequest()->query->get('date')) {
           $date = DrupalDateTime::createFromFormat('Y-m-d', $date);
         }
@@ -285,10 +286,14 @@ class AlertForm extends ContentEntityForm {
               intval($date->format('d'))
             );
 
-            if ($to->getTimestamp() - $from->getTimestamp() < 0) {
+            if (($diff = $to->getTimestamp() - $from->getTimestamp()) < 0) {
               $to->add(\DateInterval::createFromDateString('1 day'));
             }
-
+            elseif ($diff === 0) {
+              $this->messenger()->addWarning($this->t('@calendar is set to close at the same time as it opens.', [
+                '@calendar' => $calendar->label(),
+              ]));
+            }
             $this->updateHours($calendar, $event_id, $from, $to);
           }
         }
