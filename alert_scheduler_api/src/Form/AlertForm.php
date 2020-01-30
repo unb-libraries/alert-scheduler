@@ -270,18 +270,25 @@ class AlertForm extends ContentEntityForm {
         if ($action === self::ACTION_CHANGE) {
           foreach ($hours as $index => $block) {
             $event_id = $form_state->getValue("block_id:{$calendar_id}:{$index}");
+            /** @var \Drupal\Core\Datetime\DrupalDateTime $from */
             $from = $form_state->getValue("opens:{$calendar_id}:{$index}");
             $from->setDate(
               intval($date->format('Y')),
               intval($date->format('m')),
               intval($date->format('d'))
             );
+            /** @var \Drupal\Core\Datetime\DrupalDateTime $to */
             $to = $form_state->getValue("closes:{$calendar_id}:{$index}");
             $to->setDate(
               intval($date->format('Y')),
               intval($date->format('m')),
               intval($date->format('d'))
             );
+
+            if ($to->getTimestamp() - $from->getTimestamp() < 0) {
+              $to->add(\DateInterval::createFromDateString('1 day'));
+            }
+
             $this->updateHours($calendar, $event_id, $from, $to);
           }
         }
