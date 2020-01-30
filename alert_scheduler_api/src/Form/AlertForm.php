@@ -93,7 +93,7 @@ class AlertForm extends ContentEntityForm {
               '#type' => 'select',
               '#options' => [
                 self::ACTION_CHANGE => $this->t('Change hours'),
-                self::ACTION_CLOSE => $this->t('Close'),
+                self::ACTION_CLOSE => $this->t('Mark as CLOSED (all day)'),
               ],
               '#default_value' => self::ACTION_CHANGE,
             ];
