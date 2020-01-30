@@ -45,23 +45,35 @@ class AlertForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
 
     if ($calendars = $this->loadCalendars()) {
-      $form['hours_override'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Change hours'),
-        '#weight' => 10,
-      ];
-
-      $form['hours'] = [
-        '#type' => 'fieldset',
-        '#title' => $this->t('Hours'),
-        '#states' => [
-          'visible' => [
-            'input[name="hours_override"]' => [
-              'checked' => TRUE,
-            ],
+      $form['hours_container'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => [
+            'mt-5',
+            'mb-4',
           ],
         ],
-        '#weight' => 15,
+        '#weight' => 10,
+        'hours_override_wrapper' => [
+          '#type' => 'container',
+          'hours_override' => [
+            '#type' => 'checkbox',
+            '#title' => $this->t('Change hours'),
+            '#weight' => 10,
+          ],
+        ],
+        'hours' => [
+          '#type' => 'fieldset',
+          '#title' => $this->t('Hours'),
+          '#states' => [
+            'visible' => [
+              'input[name="hours_override"]' => [
+                'checked' => TRUE,
+              ],
+            ],
+          ],
+          '#weight' => 15,
+        ],
       ];
 
       foreach ($calendars as $calendar_id => $calendar) {
@@ -73,7 +85,7 @@ class AlertForm extends ContentEntityForm {
         }
         $hours = $calendar->getHours($date, $date);
 
-        $form['hours'][$calendar->id()] = [
+        $form['hours_container']['hours'][$calendar->id()] = [
           '#type' => 'fieldset',
           '#title' => $this->t($calendar->title . ' (@day)', [
             '@day' => $date === $today ? 'today' : 'tomorrow',
@@ -89,7 +101,7 @@ class AlertForm extends ContentEntityForm {
 
         if (!empty($hours)) {
           foreach ($hours as $index => $block) {
-            $form['hours'][$calendar_id]["{$calendar_id}_action"] = [
+            $form['hours_container']['hours'][$calendar_id]["{$calendar_id}_action"] = [
               '#type' => 'select',
               '#options' => [
                 self::ACTION_CHANGE => $this->t('Change hours'),
@@ -98,7 +110,7 @@ class AlertForm extends ContentEntityForm {
               '#default_value' => self::ACTION_CHANGE,
             ];
 
-            $form['hours'][$calendar_id][$index] = [
+            $form['hours_container']['hours'][$calendar_id][$index] = [
               '#type' => count($hours) > 1 ? 'fieldset' : 'container',
               '#title' => sprintf('%s - %s',
                 $block->getStart()->format('h:i a'), $block->getEnd()->format('h:i a')),
@@ -148,7 +160,7 @@ class AlertForm extends ContentEntityForm {
             'query' => $this->getRedirectDestination()->getAsArray(),
           ]);
           $add_hours_link = Link::fromTextAndUrl('(re-)open it', $add_hours_url);
-          $form['hours'][$calendar_id]['message'] = [
+          $form['hours_container']['hours'][$calendar_id]['message'] = [
             '#type' => 'html_tag',
             '#tag' => 'p',
             '#value' => $this->t('@calendar is currently closed, but you can @create_link.', [
@@ -158,7 +170,7 @@ class AlertForm extends ContentEntityForm {
           ];
         }
 
-        if (!array_key_exists('edit-other-day', $form['hours'])) {
+        if (!array_key_exists('edit-other-day', $form['hours_container']['hours'])) {
           if ($date === $today) {
             $other_day_label = 'tomorrow';
             $tomorrow = $now->add(\DateInterval::createFromDateString('1 day'))
@@ -186,7 +198,7 @@ class AlertForm extends ContentEntityForm {
             ]);
           }
 
-          $form['hours']['edit-other-day'] = [
+          $form['hours_container']['hours']['edit-other-day'] = [
             '#type' => 'html_tag',
             '#tag' => 'p',
             '#value' => $this->t("If you need to change @other_day's hours instead, click @link", [
