@@ -1,2 +1,6 @@
 calendar_overrides:
-  - libsys
+  - hil
+  - sfl
+  - ecsl
+  - hwkc
+  - law
