@@ -31,7 +31,7 @@
         } else {
           var datePartner = $('input[type="date"]', context).get(index);
           if (datePartner !== undefined) {
-            var time = that.formatTime(new Date($(datePartner).val() + ' ' + timeInput.val()));
+            var time = that.formatTime(new Date($(datePartner).val() + 'T' + timeInput.val()));
             timeInput.val(time);
           }
         }
