@@ -15,22 +15,22 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *
  * @ContentEntityType(
  *   id = "scheduled_alert",
- *   label = @Translation("Alert"),
+ *   label = @Translation("Banner alert"),
+ *   label_plural = @Translation("Banner alerts"),
+ *   label_collection = @Translation("Banner alerts"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\alert_scheduler_api\AlertListBuilder",
- *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
+ *     "list_builder" = "Drupal\alert_scheduler_api\Entity\AlertListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
- *
  *     "form" = {
  *       "default" = "Drupal\Core\Entity\ContentEntityForm",
  *       "add" = "Drupal\alert_scheduler_api\Form\AlertForm",
  *       "edit" = "Drupal\alert_scheduler_api\Form\AlertForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *     },
- *     "access" = "Drupal\alert_scheduler_api\AlertAccessControlHandler",
+ *     "access" = "Drupal\lib_unb_custom_entity\Entity\EntityAccessControlHandler",
  *     "route_provider" = {
- *       "html" = "\Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider",
+ *       "html" = "\Drupal\lib_unb_custom_entity\Entity\Routing\HtmlRouteProvider",
  *     },
  *   },
  *   base_table = "scheduled_alert",
@@ -42,10 +42,10 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "langcode" = "langcode",
  *   },
  *   links = {
- *     "add-form" = "/alert-scheduler/alerts/create",
+ *     "collection" = "/alert-scheduler/alerts",
+ *     "add-form" = "/alert-scheduler/alerts/add",
  *     "edit-form" = "/alert-scheduler/alerts/{scheduled_alert}/edit",
  *     "delete-form" = "/alert-scheduler/alerts/{scheduled_alert}/delete",
- *     "collection" = "/alert-scheduler/alerts",
  *   }
  * )
  */

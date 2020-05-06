@@ -1,7 +1,7 @@
 alert_scheduler.settings.client:
-  path: '/admin/config/services/alerts/client'
+  path: '/alert-scheduler/settings'
   defaults:
     _form: 'Drupal\alert_scheduler_client\Form\AlertSchedulerClientSettingsForm'
-    _title: 'Alert Scheduler: Client Settings'
+    _title: 'Settings'
   requirements:
     _permission: 'administer alert scheduler'

@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - alert_scheduler_api
+id: alert_scheduler_editor
+label: 'Banner Alerts Editor'
+weight: 5
+is_admin: null
+permissions:
+  - 'create hours'
+  - 'create scheduled_alert entities'
+  - 'delete scheduled_alert entities'
+  - 'edit hours'
+  - 'edit scheduled_alert entities'
+  - 'list scheduled_alert entities'
+  - 'view scheduled_alert entities'

@@ -1,15 +1,14 @@
-add scheduled alert entities:
-  title: 'Create Alerts'
-  description: 'Create new alert messages.'
+list scheduled_alert entities:
+  title: 'View a list of banner alerts'
 
-view scheduled alert entities:
-  title: 'View Alerts'
-  description: 'View alert messages.'
+create scheduled_alert entities:
+  title: 'Create banner alerts'
 
-edit scheduled alert entities:
-  title: 'Edit Alerts'
-  description: 'Edit alert messages.'
+view scheduled_alert entities:
+  title: 'View banner alerts'
 
-delete scheduled alert entities:
-  title: 'Delete Alerts'
-  description: 'Delete alert messages.'
+edit scheduled_alert entities:
+  title: 'Edit banner alerts'
+
+delete scheduled_alert entities:
+  title: 'Delete banner alerts'
