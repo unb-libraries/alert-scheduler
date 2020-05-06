@@ -1,0 +1,6 @@
+system.admin.unblib.alert_scheduler:
+  route_name: entity.scheduled_alert.collection
+  title: 'Banner Alerts'
+  description: 'Schedule public alert messages to be issued during a defined time frame.'
+  parent: system.admin.unblib
+  weight: 0

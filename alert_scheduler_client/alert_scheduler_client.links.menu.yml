@@ -1,5 +1,5 @@
-alert_scheduler.settings:
-  title: 'Alert Scheduler'
-  parent: system.admin_config_services
+system.admin.unblib.alert_scheduler.settings:
+  title: 'Settings'
+  parent: system.admin.unblib.alert_scheduler
   route_name: alert_scheduler.settings.client
-  description: 'Schedule and display alert messages.'
+  description: 'Client configuration.'
