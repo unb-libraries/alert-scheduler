@@ -7,7 +7,7 @@ create scheduled_alert entities:
 view scheduled_alert entities:
   title: 'View banner alerts'
 
-edit scheduled_alert entities:
+update scheduled_alert entities:
   title: 'Edit banner alerts'
 
 delete scheduled_alert entities:

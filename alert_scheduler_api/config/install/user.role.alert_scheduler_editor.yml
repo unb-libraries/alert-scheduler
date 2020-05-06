@@ -13,6 +13,6 @@ permissions:
   - 'create scheduled_alert entities'
   - 'delete scheduled_alert entities'
   - 'edit hours'
-  - 'edit scheduled_alert entities'
   - 'list scheduled_alert entities'
+  - 'update scheduled_alert entities'
   - 'view scheduled_alert entities'
