@@ -5,3 +5,4 @@ alert_scheduler.settings.client:
     _title: 'Settings'
   requirements:
     _permission: 'administer alert scheduler'
+    _module_dependencies: 'alert_scheduler'
