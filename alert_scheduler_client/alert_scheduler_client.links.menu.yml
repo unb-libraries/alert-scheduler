@@ -3,3 +3,4 @@ system.admin.unblib.alert_scheduler.settings:
   parent: system.admin.unblib.alert_scheduler
   route_name: alert_scheduler.settings.client
   description: 'Client configuration.'
+  weight: 99

@@ -1,5 +1,6 @@
 system.admin.unblib.alert_scheduler.entity.scheduled_alert.collection:
-  title: 'Alerts'
+  title: 'View alerts'
   route_name: entity.scheduled_alert.collection
   description: 'A list of scheduled or expired alerts.'
   parent: system.admin.unblib.alert_scheduler
+  weight: 0
