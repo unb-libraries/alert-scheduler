@@ -2,11 +2,14 @@
 
 namespace Drupal\alert_scheduler_api\Entity;
 
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\datetime_plus\Datetime\DateIntervalPlus;
+use Drupal\datetime_plus\DependencyInjection\StorageTimeTrait;
+use Drupal\datetime_plus\DependencyInjection\SystemTimeTrait;
 
 /**
  * Defines the Alert entity.
@@ -52,8 +55,15 @@ use Drupal\Core\Entity\EntityTypeInterface;
 class Alert extends ContentEntityBase implements AlertInterface {
 
   use EntityChangedTrait;
+  use SystemTimeTrait;
+  use StorageTimeTrait;
 
-  protected $timezoneCorrectedInterval;
+  /**
+   * The interval during which the alert is visible.
+   *
+   * @var \Drupal\datetime_plus\Datetime\DateIntervalPlus
+   */
+  protected $interval;
 
   public function getTitle() {
     return $this->get('title')->value;
@@ -63,17 +73,6 @@ class Alert extends ContentEntityBase implements AlertInterface {
     return $this->get('body')->value;
   }
 
-    try {
-      $timezone = new \DateTimeZone(\Drupal::currentUser()->getTimeZone());
-    }
-    catch (\Exception $e) {
-      $timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone')['default']);
-    }
-    $interval = $this->get('interval')->first();
-    return [
-      'from' => (new DrupalDateTime($interval->value, 'UTC'))->setTimezone($timezone),
-      'to' => (new DrupalDateTime($interval->end_value, 'UTC'))->setTimezone($timezone),
-    ];
   /**
    * Retrieve the interval during which the alert is visible.
    *
@@ -81,6 +80,17 @@ class Alert extends ContentEntityBase implements AlertInterface {
    *   A date interval object.
    */
   public function getInterval() {
+    if (!isset($this->interval)) {
+      $start = static::storageTime()
+        ->createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $this->get('interval')->value)
+        ->setTimezone(static::systemTime()->getTimeZone());
+      $end = static::storageTime()
+        ->createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $this->get('interval')->end_value)
+        ->setTimezone(static::systemTime()->getTimeZone());
+
+      $this->interval = new DateIntervalPlus($start, $end);
+    }
+    return $this->interval;
   }
 
   /**
