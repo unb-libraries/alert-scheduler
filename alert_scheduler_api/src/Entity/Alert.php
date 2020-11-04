@@ -49,7 +49,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   }
  * )
  */
-class Alert extends ContentEntityBase {
+class Alert extends ContentEntityBase implements AlertInterface {
 
   use EntityChangedTrait;
 
@@ -63,21 +63,6 @@ class Alert extends ContentEntityBase {
     return $this->get('body')->value;
   }
 
-  public function isVisibleFrom() {
-    if (!isset($this->timezoneCorrectedInterval)) {
-      $this->timezoneCorrectedInterval = $this->getScheduledInterval();
-    }
-    return $this->timezoneCorrectedInterval['from'];
-  }
-
-  public function isVisibleUntil() {
-    if (!isset($this->timezoneCorrectedInterval)) {
-      $this->timezoneCorrectedInterval = $this->getScheduledInterval();
-    }
-    return $this->timezoneCorrectedInterval['to'];
-  }
-
-  protected function getScheduledInterval() {
     try {
       $timezone = new \DateTimeZone(\Drupal::currentUser()->getTimeZone());
     }
@@ -89,6 +74,13 @@ class Alert extends ContentEntityBase {
       'from' => (new DrupalDateTime($interval->value, 'UTC'))->setTimezone($timezone),
       'to' => (new DrupalDateTime($interval->end_value, 'UTC'))->setTimezone($timezone),
     ];
+  /**
+   * Retrieve the interval during which the alert is visible.
+   *
+   * @return \Drupal\datetime_plus\Datetime\DateIntervalPlus
+   *   A date interval object.
+   */
+  public function getInterval() {
   }
 
   /**

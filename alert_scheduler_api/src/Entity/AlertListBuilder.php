@@ -26,15 +26,16 @@ class AlertListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $alert \Drupal\alert_scheduler_api\Entity\Alert */
+    /* @var $alert \Drupal\alert_scheduler_api\Entity\AlertInterface */
     $alert = $entity;
 
+    $start = $alert->getInterval()->start()->format('Y-m-d h:i');
+    $end = $alert->getInterval()->end()->format('Y-m-d h:i');
+
     return [
-      'title' => $alert->label(),
-      'interval' => sprintf('%s - %s',
-        $alert->isVisibleFrom()->format('Y-m-d h:i'),
-        $alert->isVisibleUntil()->format('Y-m-d h:i'))
-    ] + parent::buildRow($entity);
+        'title' => $alert->label(),
+        'interval' => "{$start} - {$end}",
+      ] + parent::buildRow($entity);
   }
 
   /**

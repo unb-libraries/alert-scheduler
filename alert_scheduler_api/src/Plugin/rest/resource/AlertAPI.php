@@ -43,14 +43,14 @@ class AlertAPI extends ResourceBase {
     $alerts = $this->alertStorage->loadMultiple();
     $json_alerts = [];
     foreach ($alerts as $alert) {
-      /** @var Alert $alert */
+      /** @var \Drupal\alert_scheduler_api\Entity\AlertInterface $alert */
       $json_alerts[] = [
         'id' => $alert->id(),
         'title' => $alert->getTitle(),
         'message' => $alert->getMessage(),
         'interval' => [
-          'from' => $alert->isVisibleFrom()->format('c'),
-          'to' => $alert->isVisibleUntil()->format('c'),
+          'from' => $alert->getInterval()->start()->format('c'),
+          'to' => $alert->getInterval()->end()->format('c'),
         ],
       ];
     }
