@@ -74,20 +74,16 @@ class Alert extends ContentEntityBase implements AlertInterface {
   }
 
   /**
-   * Retrieve the interval during which the alert is visible.
-   *
-   * @return \Drupal\datetime_plus\Datetime\DateIntervalPlus
-   *   A date interval object.
+   * {@inheritDoc}
    */
   public function getInterval() {
-    if (!isset($this->interval)) {
+    if (!isset($this->interval) || is_array($this->interval)) {
       $start = static::storageTime()
         ->createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $this->get('interval')->value)
         ->setTimezone(static::systemTime()->getTimeZone());
       $end = static::storageTime()
         ->createFromFormat(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $this->get('interval')->end_value)
         ->setTimezone(static::systemTime()->getTimeZone());
-
       $this->interval = new DateIntervalPlus($start, $end);
     }
     return $this->interval;
