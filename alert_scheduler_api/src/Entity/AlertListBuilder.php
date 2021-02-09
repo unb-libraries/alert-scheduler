@@ -53,4 +53,14 @@ class AlertListBuilder extends EntityListBuilder {
       ];
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  protected function sortKeys() {
+    return [
+      'interval__value' => 'DESC',
+      'interval__end_value' => 'ASC',
+    ];
+  }
+
 }
