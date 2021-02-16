@@ -9,6 +9,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 
+/**
+ * Form controller for "scheduled_alert" entities.
+ *
+ * @package Drupal\alert_scheduler_api\Form
+ */
 class AlertForm extends ContentEntityForm {
 
   protected const SETTINGS_AMENDABLE_CALENDARS = 'calendar_overrides';
@@ -75,10 +80,11 @@ class AlertForm extends ContentEntityForm {
 
         $form['hours_container']['hours'][$calendar->id()] = [
           '#type' => 'fieldset',
-          '#title' => $this->t($calendar->title . ' (@day@sep@date)', [
+          '#title' => $this->t('@calendar (@day@sep@date)', [
+            '@calendar' => $calendar->title,
             '@day' => $date === $today ? 'today' : 'tomorrow',
             '@sep' => $date !== $today ? ', ' : '',
-            '@date'=> $date !== $today ? DrupalDateTime::createFromFormat('Y-m-d', $date)->format('M jS, Y') : '',
+            '@date' => $date !== $today ? DrupalDateTime::createFromFormat('Y-m-d', $date)->format('M jS, Y') : '',
           ]),
           '#attributes' => [
             'class' => [
@@ -168,7 +174,7 @@ class AlertForm extends ContentEntityForm {
             if ($this->getEntity()->isNew()) {
               $other_day_url = Url::fromRoute('entity.scheduled_alert.add_form');
             }
-            else{
+            else {
               $other_day_url = $this->getEntity()->toUrl('edit-form');
             }
             $other_day_url->setOption('query', [
@@ -180,7 +186,7 @@ class AlertForm extends ContentEntityForm {
             if ($this->getEntity()->isNew()) {
               $other_day_url = Url::fromRoute('entity.scheduled_alert.add_form');
             }
-            else{
+            else {
               $other_day_url = $this->getEntity()->toUrl('edit-form');
             }
             $other_day_url->mergeOptions([
@@ -272,7 +278,7 @@ class AlertForm extends ContentEntityForm {
 
     if ($form_state->getValue('hours_override')) {
       $any_update = FALSE;
-      foreach ($this->loadCalendars(['libsys']) as $calendar_id => $calendar) {
+      foreach ($this->loadCalendars() as $calendar_id => $calendar) {
         /** @var \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar */
         if ($date = $this->getRequest()->query->get('date')) {
           $date = DrupalDateTime::createFromFormat('Y-m-d', $date);
@@ -310,7 +316,8 @@ class AlertForm extends ContentEntityForm {
               $this->messenger()->addError($this->t('Opening and closing time must not be the same, @calendar was not updated.', [
                 '@calendar' => $calendar->label(),
               ]));
-            } elseif ($from->getTimestamp() === $block->getStart()->getTimestamp()
+            }
+            elseif ($from->getTimestamp() === $block->getStart()->getTimestamp()
               && $to->getTimestamp() === $block->getEnd()->getTimestamp()) {
               $do_update = FALSE;
             }
@@ -359,14 +366,14 @@ class AlertForm extends ContentEntityForm {
    *
    * @param \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar
    *   The calendar.
-   * @param $event_id
+   * @param string $event_id
    *   ID of the event to update.
-   * @param DrupalDateTime $from
+   * @param \Drupal\Core\Datetime\DrupalDateTime $from
    *   New start of the event.
-   * @param DrupalDateTime $to
+   * @param \Drupal\Core\Datetime\DrupalDateTime $to
    *   New end of the event.
    */
-  protected function updateHours(HoursCalendar $calendar, $event_id, DrupalDateTime $from, DrupalDateTime $to) {
+  protected function updateHours(HoursCalendar $calendar, string $event_id, DrupalDateTime $from, DrupalDateTime $to) {
     try {
       $calendar->setHours($event_id, $from, $to);
       $this->messenger()->addStatus($this->t('@calendar is now open from @hours_start - @hours_end on @date.', [
@@ -385,7 +392,7 @@ class AlertForm extends ContentEntityForm {
   }
 
   /**
-   * 'Close' the given calendar.
+   * Set the library associated with the given calendar to 'closed'.
    *
    * @param \Drupal\calendar_hours_server\Entity\HoursCalendar $calendar
    *   The calendar.

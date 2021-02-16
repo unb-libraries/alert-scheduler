@@ -2,6 +2,7 @@
 
 namespace Drupal\alert_scheduler_api\Entity;
 
+use Drupal\Core\Entity\Annotation\ContentEntityType;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
@@ -65,10 +66,16 @@ class Alert extends ContentEntityBase implements AlertInterface {
    */
   protected $interval;
 
+  /**
+   * {@inheritDoc}
+   */
   public function getTitle() {
     return $this->get('title')->value;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public function getMessage() {
     return $this->get('body')->value;
   }
