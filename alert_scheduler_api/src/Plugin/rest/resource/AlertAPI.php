@@ -26,24 +26,36 @@ class AlertAPI extends ResourceBase {
 
   protected $alertStorage;
 
+  /**
+   * The alert storage handler.
+   *
+   * @return \Drupal\Core\Entity\ContentEntityStorageInterface
+   *   An entity storage handler for "scheduled_alert" entities.
+   */
+  protected function alertStorage() {
+    return $this->alertStorage;
+  }
+
   public function __construct(ContentEntityStorageInterface $alert_storage, array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->alertStorage = $alert_storage;
   }
 
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    /** @var AlertStorage $alert_storage */
-    $alert_storage = $container->get('entity_type.manager')->getStorage('scheduled_alert');
-    /** @var LoggerChannel $logger */
-    $logger = $container->get('logger.channel.rest');
-    return new static($alert_storage, $configuration, $plugin_id, $plugin_definition, $container->getParameter('serializer.formats'), $logger);
+    /* @noinspection PhpParamsInspection */
+    return new static(
+      $container->get('entity_type.manager')
+        ->getStorage('scheduled_alert'),
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->getParameter('serializer.formats'),
+      $container->get('logger.channel.rest'));
   }
 
   public function get() {
-    $alerts = $this->alertStorage->loadMultiple();
     $json_alerts = [];
-    foreach ($alerts as $alert) {
-      /** @var \Drupal\alert_scheduler_api\Entity\AlertInterface $alert */
+    foreach ($this->loadAlerts() as $alert) {
       $json_alerts[] = [
         'id' => $alert->id(),
         'title' => $alert->getTitle(),
@@ -69,6 +81,22 @@ class AlertAPI extends ResourceBase {
     ]));
 
     return $response;
+  }
+
+  /**
+   * Load the alert entities with the given IDs.
+   *
+   * @param array|null $ids
+   *   An array of entity IDs, or NULL to load all entities.
+   *
+   * @return \Drupal\alert_scheduler_api\Entity\AlertInterface[]
+   *   An array of "scheduled_alert" entities.
+   */
+  protected function loadAlerts(array $ids = NULL) {
+    /** @var \Drupal\alert_scheduler_api\Entity\AlertInterface[] $alerts */
+    $alerts = $this->alertStorage()
+      ->loadMultiple($ids);
+    return $alerts;
   }
 
 }

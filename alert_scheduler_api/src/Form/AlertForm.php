@@ -27,18 +27,6 @@ class AlertForm extends ContentEntityForm {
   }
 
   /**
-   * Retrieve a datetime generator instance for this module.
-   *
-   * @return \Drupal\alert_scheduler_api\AlertDateTimeGenerator
-   *   A datetime generator instance.
-   */
-  protected function getDateTimeGenerator() {
-    /** @var \Drupal\alert_scheduler_api\AlertDateTimeGenerator $generator */
-    $generator = \Drupal::service('datetime_generator.alert_scheduler');
-    return $generator;
-  }
-
-  /**
    * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
