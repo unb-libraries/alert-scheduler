@@ -209,7 +209,10 @@ class AlertForm extends ContentEntityForm {
 
     $form['info'] = [
       '#type' => 'container',
-      '#markup' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">Note: </span>It can take up to 5 minutes for new alerts or edits to display in the browser, depending on the cache cycle.',
+      '#prefix' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">' . $this->t('Note') . ': </span>',
+      '#markup' => $this->t('It can take up to @interval minutes for new alerts or edits to display in the browser, depending on the cache cycle.', [
+        '@interval' => $this->getHoursCacheInterval() / 60,
+      ]),
       '#attributes' => [
         'class' => [
           'alert',
@@ -221,6 +224,27 @@ class AlertForm extends ContentEntityForm {
 
     $form['#attached']['library'][] = 'alert_scheduler_api/timepicker';
     return $form;
+  }
+
+  /**
+   * Retrieve the number of seconds after which the hours cache is refreshed.
+
+   * @return int
+   *   An integer >= 0 indicating
+   */
+  protected function getHoursCacheInterval() {
+    return $this->getHoursConfig()
+      ->get('max_age');
+  }
+
+  /**
+   * Retrieve "calendar_hours" settings.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   *   An immutable config object.
+   */
+  protected function getHoursConfig() {
+    return $this->config(CALENDAR_HOURS__SETTINGS_CLIENT);
   }
 
   /**
