@@ -209,8 +209,7 @@ class AlertForm extends ContentEntityForm {
 
     $form['info'] = [
       '#type' => 'container',
-      '#prefix' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">' . $this->t('Note') . ': </span>',
-      '#markup' => $this->t('It can take up to @interval minutes for new alerts or edits to display in the browser, depending on the cache cycle.', [
+      '#markup' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">' . $this->t('Note') . ': </span>' . $this->t('It can take up to @interval minutes for new alerts or edits to display in the browser, depending on the cache cycle.', [
         '@interval' => $this->getHoursCacheInterval() / 60,
       ]),
       '#attributes' => [
