@@ -209,11 +209,11 @@ class AlertForm extends ContentEntityForm {
 
     $form['info'] = [
       '#type' => 'container',
-      '#markup' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">Note:</span>It can take up to 5 minutes for new alerts or edits to display in the browser, depending on the cache cycle.</p>',
+      '#markup' => '<i class="fas fa-stopwatch mr-2"></i><span class="font-weight-bold">Note: </span>It can take up to 5 minutes for new alerts or edits to display in the browser, depending on the cache cycle.',
       '#attributes' => [
         'class' => [
           'alert',
-          'alert-info',
+          'alert-warning',
         ],
       ],
       '#weight' => 90,
