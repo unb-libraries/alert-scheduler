@@ -1,0 +1,120 @@
+<?php
+
+/**
+ * @file
+ * Contains alert_scheduler_api.install.
+ */
+
+use Drupal\alert_scheduler_api\Entity\Alert;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Utility\UpdateException;
+
+$backup = [];
+
+/**
+ * The database service.
+ *
+ * @return \Drupal\Core\Database\Connection
+ *   A database connection object.
+ */
+function database() {
+  return Drupal::database();
+}
+
+/**
+ * The alert entity storage handler.
+ *
+ * @return \Drupal\Core\Entity\EntityStorageInterface
+ *   A storage handler for scheduled_alert entities.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function alertStorage() {
+  return Drupal::entityTypeManager()
+    ->getStorage('scheduled_alert');
+}
+
+/**
+ * Schema update #1: Convert 'body' field from type "string_long" to "text".
+ */
+function alert_scheduler_api_update_8101(array &$sandbox) {
+  $transaction = database()->startTransaction('alert_scheduler_api__convert_field_body');
+  try {
+    backupBodyData();
+    convertFieldBody();
+  }
+  catch (\Exception $e) {
+    $transaction->rollBack();
+    $error = 'An error occurred while trying to convert the "body" field. The field type was not changed: ' .
+      $e->getMessage() . "\n\n" .
+      $e->getTraceAsString();
+    \Drupal::logger('db')->error($error);
+    throw new UpdateException($error);
+  }
+  finally {
+    restoreBodyData();
+  }
+}
+
+/**
+ * Convert 'body' field from type "string_long" to "text".
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function convertFieldBody() {
+  $alert_storage = alertStorage();
+  $definition_manager = \Drupal::entityDefinitionUpdateManager();
+  $body_field_definition = $definition_manager
+    ->getFieldStorageDefinition('body', $alert_storage->getEntityTypeId());
+
+  // Uninstall, re-install (with changed type).
+  $definition_manager->uninstallFieldStorageDefinition($body_field_definition);
+  $definition_manager->installFieldStorageDefinition(
+    'body',
+    $alert_storage->getEntityTypeId(),
+    $alert_storage->getEntityTypeId(),
+    BaseFieldDefinition::create('text_long')
+      ->setLabel(t('Message'))
+      ->setDescription(t('Content of the alert.'))
+      ->setRequired(FALSE)
+      ->setDisplayOptions('form', [
+        'type' => 'text_textarea',
+        'weight' => 1,
+      ])
+  );
+}
+
+/**
+ * Backup existing "body" field data.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function backupBodyData() {
+  global $backup;
+  $storage = alertStorage();
+  foreach ($storage->loadMultiple() as $alert_id => $alert) {
+    $backup[$storage->getEntityTypeId()]['body'][$alert_id] = $alert->get('body')->value;
+    $alert->set('body', NULL);
+    $alert->save();
+  }
+}
+
+/**
+ * Write previously backed-up data back to the database.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function restoreBodyData() {
+  global $backup;
+  $storage = alertStorage();
+  foreach ($storage->loadMultiple() as $alert_id => $alert) {
+    $alert->set('body', $backup[$storage->getEntityTypeId()]['body'][$alert_id]);
+    $alert->save();
+  }
+}
