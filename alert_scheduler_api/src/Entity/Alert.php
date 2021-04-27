@@ -77,7 +77,7 @@ class Alert extends ContentEntityBase implements AlertInterface {
    * {@inheritDoc}
    */
   public function getMessage() {
-    return $this->get('body')->value;
+    return $this->get('body')->processed;
   }
 
   /**
@@ -111,11 +111,13 @@ class Alert extends ContentEntityBase implements AlertInterface {
         'weight' => 0,
       ]);
 
-    $fields['body'] = BaseFieldDefinition::create('string_long')
+    $fields['body'] = BaseFieldDefinition::create('text_long')
       ->setLabel(t('Message'))
       ->setDescription(t('Content of the alert.'))
       ->setRequired(FALSE)
       ->setDisplayOptions('form', [
+        'type' => 'text_textarea',
+        'rows' => 5,
         'weight' => 1,
       ]);
 
