@@ -35,7 +35,7 @@ class AlertSchedulerClientSettingsForm extends ConfigFormBase {
     $config = $this->config(ALERT_SCHEDULER__SETTINGS_CLIENT);
 
     $base_url = $config->get('base_url');
-    $default_base_url = '/api/alerts/';
+    $default_base_url = '/api/alerts';
     $form['base_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Request URL'),

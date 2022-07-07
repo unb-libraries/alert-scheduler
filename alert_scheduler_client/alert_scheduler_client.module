@@ -31,7 +31,7 @@ function alert_scheduler_client_help($route_name, RouteMatchInterface $route_mat
 function alert_scheduler_client_preprocess_html(&$variables) {
   $base_url = \Drupal::config(ALERT_SCHEDULER__SETTINGS_CLIENT)->get('base_url');
   if (empty($base_url)) {
-    $base_url = '/api/alerts/';
+    $base_url = '/api/alerts';
   }
   $variables['#attached']['drupalSettings']['alertScheduler']['baseUrl'] = $base_url;
 
