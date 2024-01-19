@@ -1,7 +1,7 @@
 {
   "name": "unb-libraries/alert_scheduler",
   "type": "drupal-module",
-  "description": "Drupal 8 Module for managing UNB Libraries Banner Alerts",
+  "description": "Drupal Module for managing UNB Libraries Banner Alerts",
   "keywords": ["Drupal"],
   "license": "MIT",
   "homepage": "https://github.com/unb-libraries/alert-scheduler",

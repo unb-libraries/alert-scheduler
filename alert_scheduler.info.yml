@@ -1,7 +1,6 @@
 name: 'Alert Scheduler'
 type: module
 description: 'Schedule public alert messages to be issued during a defined time frame.'
-core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
 hidden: true
 package: 'UNB Libraries Applications'

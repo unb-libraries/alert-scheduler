@@ -9,5 +9,5 @@ alerts:
   dependencies:
     - core/drupal
     - core/drupalSettings
-    - core/backbone
+    - core/internal.backbone
     - core/jquery
